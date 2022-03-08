@@ -1,15 +1,15 @@
 Package: cpp11
 Title: A C++11 Interface for R's C Interface
-Version: 0.4.0.9000
+Version: 0.4.2.9000
 Authors@R: 
     c(person(given = "Jim",
              family = "Hester",
-             role = c("aut", "cre"),
-             email = "jim.hester@rstudio.com",
+             role = "aut",
              comment = c(ORCID = "0000-0002-2739-7082")),
       person(given = "Romain",
              family = "François",
-             role = "ctb"),
+             role = c("aut", "cre"),
+             email = "romain@rstudio.com"),
       person(given = "Benjamin",
              family = "Kietzman",
              role = "ctb"),
@@ -58,5 +58,5 @@ Config/Needs/cpp11/cpp_register:
     vctrs
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 SystemRequirements: C++11
