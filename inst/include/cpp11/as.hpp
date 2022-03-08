@@ -63,6 +63,9 @@ template <typename T, typename R = void>
 using enable_if_bool = enable_if_t<std::is_same<T, bool>::value, R>;
 
 template <typename T, typename R = void>
+using enable_if_rcomplex = enable_if_t<std::is_same<T, Rcomplex>::value, R>;
+
+template <typename T, typename R = void>
 using enable_if_char = enable_if_t<std::is_same<T, char>::value, R>;
 
 template <typename T, typename R = void>
@@ -138,6 +141,17 @@ enable_if_bool<T, T> as_cpp(SEXP from) {
   }
 
   throw std::length_error("Expected single logical value");
+}
+
+template <typename T>
+enable_if_rcomplex<T, T> as_cpp(SEXP from) {
+  if (Rf_isComplex(from)) {
+    if (Rf_xlength(from) == 1) {
+      return COMPLEX_ELT(from, 0);
+    }
+  }
+
+  throw std::length_error("Expected single complex value");
 }
 
 template <typename T>
@@ -219,6 +233,11 @@ enable_if_bool<T, SEXP> as_sexp(T from) {
 }
 
 template <typename T>
+enable_if_rcomplex<T, SEXP> as_sexp(T from) {
+  return safe[Rf_ScalarComplex](from);
+}
+
+template <typename T>
 enable_if_c_string<T, SEXP> as_sexp(T from) {
   return unwind_protect([&] { return Rf_ScalarString(Rf_mkCharCE(from, CE_UTF8)); });
 }
@@ -281,6 +300,25 @@ enable_if_bool<T, SEXP> as_sexp(const Container& from) {
 inline SEXP as_sexp(std::initializer_list<bool> from) {
   return as_sexp<std::initializer_list<bool>>(from);
 }
+
+template <typename Container, typename T = typename Container::value_type,
+          typename = disable_if_convertible_to_sexp<Container>>
+enable_if_rcomplex<T, SEXP> as_sexp(const Container& from) {
+  R_xlen_t size = from.size();
+  SEXP data = safe[Rf_allocVector](CPLXSXP, size);
+
+  auto it = from.begin();
+  Rcomplex* data_p = COMPLEX(data);
+  for (R_xlen_t i = 0; i < size; ++i, ++it) {
+    data_p[i] = *it;
+  }
+  return data;
+}
+
+inline SEXP as_sexp(std::initializer_list<Rcomplex> from) {
+  return as_sexp<std::initializer_list<Rcomplex>>(from);
+}
+
 
 namespace detail {
 template <typename Container, typename AsCstring>
